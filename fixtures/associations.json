@@ -1,0 +1,54 @@
+{
+  "contacts__to__companies": [
+    {
+      "category": "HUBSPOT_DEFINED",
+      "typeId": 1,
+      "label": "Primary"
+    }
+  ],
+  "deals__to__contacts": [
+    {
+      "category": "HUBSPOT_DEFINED",
+      "typeId": 3,
+      "label": null
+    },
+    {
+      "category": "USER_DEFINED",
+      "typeId": 45,
+      "label": "Decision Maker"
+    },
+    {
+      "category": "USER_DEFINED",
+      "typeId": 47,
+      "label": "Influencer"
+    }
+  ],
+  "deals__to__companies": [
+    {
+      "category": "HUBSPOT_DEFINED",
+      "typeId": 5,
+      "label": null
+    }
+  ],
+  "tickets__to__contacts": [
+    {
+      "category": "HUBSPOT_DEFINED",
+      "typeId": 16,
+      "label": null
+    }
+  ],
+  "service_orders__to__companies": [
+    {
+      "category": "USER_DEFINED",
+      "typeId": 89,
+      "label": "Serviced Account"
+    }
+  ],
+  "service_orders__to__deals": [
+    {
+      "category": "USER_DEFINED",
+      "typeId": 91,
+      "label": "Originating Deal"
+    }
+  ]
+}

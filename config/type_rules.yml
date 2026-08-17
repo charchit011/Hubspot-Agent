@@ -1,0 +1,234 @@
+# HubSpot property type → Salesforce field type.
+#
+# This file is the leverage point of the whole project. When a client review
+# comes back with wrong mappings, fix the RULE here and regenerate — do not
+# hand-edit workbook cells. Otherwise the rules never improve and every future
+# client costs the same effort as the first.
+#
+# HubSpot describes a property with BOTH `type` and `fieldType`:
+#   type      — storage class: string, number, date, datetime, enumeration, bool
+#   fieldType — UI widget:     text, textarea, select, checkbox, radio, file...
+# The pair matters. type=string + fieldType=textarea is a LongTextArea;
+# type=string + fieldType=text is plain Text. Match on the pair first.
+
+version: 1
+
+# ---------------------------------------------------------------------------
+# Matched first, on the (type, fieldType) pair. Most specific wins.
+# ---------------------------------------------------------------------------
+pair_rules:
+  - match: {type: string, fieldType: text}
+    sf_type: Text
+    length: 255
+    length_strategy: from_data      # narrow to observed max, see length_sizing
+
+  - match: {type: string, fieldType: textarea}
+    sf_type: LongTextArea
+    length: 32768
+    visible_lines: 5
+
+  - match: {type: string, fieldType: html}
+    sf_type: LongTextArea
+    length: 131072
+    visible_lines: 10
+    flag: "HTML content — SF LongTextArea stores it as plain text, markup will show literally. Consider RichTextArea."
+
+  - match: {type: string, fieldType: phonenumber}
+    sf_type: Phone
+
+  - match: {type: string, fieldType: file}
+    sf_type: Url
+    length: 255
+    flag: "HubSpot file reference. Stores a URL, not the file. Attachment migration is a separate project."
+
+  - match: {type: enumeration, fieldType: select}
+    sf_type: Picklist
+    restricted: true
+
+  - match: {type: enumeration, fieldType: radio}
+    sf_type: Picklist
+    restricted: true
+
+  - match: {type: enumeration, fieldType: checkbox}
+    sf_type: MultiselectPicklist
+    visible_lines: 4
+    flag: "HubSpot multi-checkbox. SF multiselect picklists are painful to report on and cannot be used in most rollups — confirm the client actually wants this."
+
+  - match: {type: enumeration, fieldType: booleancheckbox}
+    sf_type: Checkbox
+    default_value: false
+
+  - match: {type: bool, fieldType: booleancheckbox}
+    sf_type: Checkbox
+    default_value: false
+
+  - match: {type: number, fieldType: number}
+    sf_type: Number
+    precision: 18
+    scale: 2
+    precision_strategy: from_data
+
+  - match: {type: number, fieldType: calculation_equation}
+    sf_type: Formula
+    formula_return_type: Number
+    deploy_default: HOLD
+    flag: "CALCULATED PROPERTY — HubSpot equations do not translate to SF formula syntax. Human review required. The formula body is emitted as a comment, not as working code."
+
+  - match: {type: date, fieldType: date}
+    sf_type: Date
+
+  - match: {type: datetime, fieldType: date}
+    sf_type: DateTime
+
+  - match: {type: datetime, fieldType: datetime}
+    sf_type: DateTime
+
+# ---------------------------------------------------------------------------
+# Fallback when no pair matches — keyed on `type` alone.
+# ---------------------------------------------------------------------------
+type_rules:
+  string:      {sf_type: Text, length: 255}
+  number:      {sf_type: Number, precision: 18, scale: 2}
+  bool:        {sf_type: Checkbox, default_value: false}
+  date:        {sf_type: Date}
+  datetime:    {sf_type: DateTime}
+  enumeration: {sf_type: Picklist, restricted: true}
+  phone_number: {sf_type: Phone}
+  object_coordinates: {sf_type: Text, length: 255, flag: "Internal HubSpot type — review."}
+  json:        {sf_type: LongTextArea, length: 32768, flag: "Raw JSON blob. Usually should be decomposed into real fields instead."}
+
+# ---------------------------------------------------------------------------
+# Name-based overrides. Applied AFTER type rules, and they win.
+# Matched case-insensitively against the HubSpot property name.
+# ---------------------------------------------------------------------------
+name_overrides:
+  - match: email
+    sf_type: Email
+    map_to_standard: Contact.Email
+
+  - match: "*_email"
+    sf_type: Email
+
+  - match: website
+    sf_type: Url
+    length: 255
+    map_to_standard: Account.Website
+
+  - match: "*_url"
+    sf_type: Url
+    length: 255
+
+  - match: phone
+    sf_type: Phone
+    map_to_standard: Contact.Phone
+
+  - match: mobilephone
+    sf_type: Phone
+    map_to_standard: Contact.MobilePhone
+
+  - match: hubspot_owner_id
+    sf_type: Lookup
+    references: User
+    special: owner_mapping
+    flag: "OWNERSHIP. Resolved via the _Users tab, not a direct value copy. Unmapped owners silently default to the running user — 03 hard-fails on this."
+
+  - match: hs_object_id
+    sf_type: Text
+    length: 18
+    external_id: true
+    unique: true
+    special: hubspot_external_id
+    # Renamed deliberately. The whole pipeline — 04's generated external ID,
+    # 07's Bulk upsert key, and the /load-data preconditions — refers to
+    # HubSpot_Record_Id__c. Letting this land as Hs_Object_Id__c would create
+    # two competing external IDs and break idempotency silently.
+    api_name: HubSpot_Record_Id__c
+    flag: "The idempotency key, renamed to HubSpot_Record_Id__c. Must be External ID + unique or Bulk upsert cannot work."
+
+  - match: "hs_*"
+    sf_type: null
+    deploy_default: N
+    flag: "HubSpot internal system property. Almost never worth migrating — defaults to N, flip to Y only with a stated reason."
+
+  - match: amount
+    sf_type: Currency
+    precision: 18
+    scale: 2
+    map_to_standard: Opportunity.Amount
+
+  - match: closedate
+    sf_type: Date
+    map_to_standard: Opportunity.CloseDate
+
+  - match: dealstage
+    sf_type: Picklist
+    map_to_standard: Opportunity.StageName
+    special: pipeline_stage
+
+# ---------------------------------------------------------------------------
+# Sizing from observed data rather than guessing 255 everywhere.
+# ---------------------------------------------------------------------------
+length_sizing:
+  enabled: true
+  # Round the observed max length up to the next bucket, for headroom.
+  buckets: [18, 40, 80, 128, 255, 1000]
+  # Above the top bucket, switch type rather than stretching Text.
+  promote_above_255_to: LongTextArea
+  headroom_multiplier: 1.5
+
+precision_sizing:
+  enabled: true
+  max_precision: 18
+  default_scale: 2
+  currency_scale: 2
+
+# ---------------------------------------------------------------------------
+# Conditions that force a row to HOLD with a visible reason. These are the
+# judgement calls; the point is to surface them, not to auto-decide them.
+# ---------------------------------------------------------------------------
+review_triggers:
+  - condition: calculated_property
+    reason: HubSpot calculation cannot be mechanically translated to an SF formula.
+  - condition: picklist_options_over
+    threshold: 100
+    reason: Very large picklist. Consider a lookup to a custom object instead.
+  - condition: picklist_value_length_over
+    threshold: 255
+    reason: Exceeds the Salesforce picklist value limit — deploy will fail.
+  - condition: fill_percent_under
+    threshold: 5
+    reason: Almost entirely empty in HubSpot. Probably not worth migrating.
+  - condition: required_with_fill_under
+    threshold: 100
+    reason: Marking this required will REJECT historical records that lack it.
+  - condition: api_name_collision
+    reason: Two HubSpot properties collapse to the same SF API name once suffixed.
+  - condition: name_over_40_chars
+    reason: Exceeds the Salesforce 40-character API name limit — needs a manual short name.
+  - condition: unknown_hubspot_type
+    reason: No rule matched. Add a rule to type_rules.yml rather than fixing the cell.
+
+# ---------------------------------------------------------------------------
+# Valid Salesforce field types — drives the Final_Type dropdown in the workbook.
+# ---------------------------------------------------------------------------
+sf_field_types:
+  - Text
+  - TextArea
+  - LongTextArea
+  - RichTextArea
+  - Email
+  - Phone
+  - Url
+  - Number
+  - Currency
+  - Percent
+  - Date
+  - DateTime
+  - Time
+  - Checkbox
+  - Picklist
+  - MultiselectPicklist
+  - Lookup
+  - MasterDetail
+  - Formula
+  - AutoNumber

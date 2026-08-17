@@ -1,0 +1,108 @@
+[
+  {
+    "name": "order_number",
+    "label": "Order Number",
+    "type": "string",
+    "fieldType": "text",
+    "groupName": "serviceorder",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "order_status",
+    "label": "Order Status",
+    "type": "enumeration",
+    "fieldType": "select",
+    "groupName": "serviceorder",
+    "calculated": false,
+    "hidden": false,
+    "description": "",
+    "options": [
+      {
+        "label": "Draft",
+        "value": "draft",
+        "displayOrder": 0,
+        "hidden": false
+      },
+      {
+        "label": "Scheduled",
+        "value": "scheduled",
+        "displayOrder": 1,
+        "hidden": false
+      },
+      {
+        "label": "In Progress",
+        "value": "in_progress",
+        "displayOrder": 2,
+        "hidden": false
+      },
+      {
+        "label": "Complete",
+        "value": "complete",
+        "displayOrder": 3,
+        "hidden": false
+      }
+    ]
+  },
+  {
+    "name": "scheduled_date",
+    "label": "Scheduled Date",
+    "type": "date",
+    "fieldType": "date",
+    "groupName": "serviceorder",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "order_value",
+    "label": "Order Value",
+    "type": "number",
+    "fieldType": "number",
+    "groupName": "serviceorder",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "technician_notes",
+    "label": "Technician Notes",
+    "type": "string",
+    "fieldType": "textarea",
+    "groupName": "serviceorder",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "requires_followup",
+    "label": "Requires Follow-up",
+    "type": "bool",
+    "fieldType": "booleancheckbox",
+    "groupName": "serviceorder",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "hs_object_id",
+    "label": "Record ID",
+    "type": "number",
+    "fieldType": "number",
+    "groupName": "serviceorder",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "hubspot_owner_id",
+    "label": "Order owner",
+    "type": "enumeration",
+    "fieldType": "select",
+    "groupName": "serviceorder",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  }
+]

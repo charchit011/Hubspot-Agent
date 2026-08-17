@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python scripts/*)",
+      "Bash(python3 scripts/*)",
+      "Bash(source .venv/bin/activate*)",
+      "Bash(sf project deploy validate:*)",
+      "Bash(sf project convert source:*)",
+      "Bash(sf org display:*)",
+      "Bash(sf org list:*)",
+      "Bash(sf data query:*)",
+      "Bash(pip install -r requirements.txt)"
+    ],
+    "deny": [
+      "Bash(sf project delete:*)",
+      "Bash(sf data delete:*)",
+      "Bash(sf org delete:*)",
+      "Read(./.env)"
+    ],
+    "ask": [
+      "Bash(sf project deploy start:*)",
+      "Bash(sf project deploy quick:*)",
+      "Bash(sf data upsert:*)",
+      "Bash(sf data import:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 scripts/guard_deploy.py"
+          }
+        ]
+      }
+    ]
+  }
+}

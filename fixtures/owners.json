@@ -1,0 +1,42 @@
+[
+  {
+    "id": "101",
+    "email": "amara.osei@example.com",
+    "firstName": "Amara",
+    "lastName": "Osei",
+    "archived": false,
+    "userId": 5001
+  },
+  {
+    "id": "102",
+    "email": "j.lindqvist@example.com",
+    "firstName": "Jonas",
+    "lastName": "Lindqvist",
+    "archived": false,
+    "userId": 5002
+  },
+  {
+    "id": "103",
+    "email": "priya.raman@example.com",
+    "firstName": "Priya",
+    "lastName": "Raman",
+    "archived": false,
+    "userId": 5003
+  },
+  {
+    "id": "104",
+    "email": "former.staff@example.com",
+    "firstName": "Former",
+    "lastName": "Staff",
+    "archived": true,
+    "userId": 5004
+  },
+  {
+    "id": "105",
+    "email": "",
+    "firstName": "Shared",
+    "lastName": "Inbox",
+    "archived": false,
+    "userId": 5005
+  }
+]

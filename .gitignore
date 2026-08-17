@@ -1,0 +1,25 @@
+# Secrets
+.env
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Client data — never commit
+raw/
+logs/
+mapping/*.xlsx
+!mapping/workbook.template.xlsx
+
+# Salesforce CLI local state
+.sf/
+.sfdx/
+
+# Generated metadata is reproducible from the workbook; keep it out of history
+# (comment this out if you want deploy-time diffs under version control)
+force-app/main/default/objects/
+force-app/main/default/permissionsets/
+
+# OS
+.DS_Store

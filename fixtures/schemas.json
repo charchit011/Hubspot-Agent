@@ -1,0 +1,50 @@
+[
+  {
+    "name": "contacts",
+    "objectTypeId": "0-1",
+    "labels": {
+      "singular": "Contact",
+      "plural": "Contacts"
+    },
+    "primaryDisplayProperty": "email"
+  },
+  {
+    "name": "companies",
+    "objectTypeId": "0-2",
+    "labels": {
+      "singular": "Company",
+      "plural": "Companies"
+    },
+    "primaryDisplayProperty": "name"
+  },
+  {
+    "name": "deals",
+    "objectTypeId": "0-3",
+    "labels": {
+      "singular": "Deal",
+      "plural": "Deals"
+    },
+    "primaryDisplayProperty": "dealname"
+  },
+  {
+    "name": "tickets",
+    "objectTypeId": "0-5",
+    "labels": {
+      "singular": "Ticket",
+      "plural": "Tickets"
+    },
+    "primaryDisplayProperty": "subject"
+  },
+  {
+    "name": "service_orders",
+    "objectTypeId": "2-1140301",
+    "labels": {
+      "singular": "Service Order",
+      "plural": "Service Orders"
+    },
+    "primaryDisplayProperty": "order_number",
+    "requiredProperties": [
+      "order_number"
+    ]
+  }
+]

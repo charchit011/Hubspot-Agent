@@ -1,0 +1,164 @@
+# HubSpot object → Salesforce object.
+#
+# Interview decisions encoded here:
+#   - Person Accounts OFF  → Contact maps to Contact, Company maps to Account.
+#   - Portal contents UNKNOWN → nothing client-specific is hardcoded. Standard
+#     objects are mapped explicitly; anything else falls through to `defaults`,
+#     which generates a Salesforce custom object automatically.
+#   - Pipelines "all and everything" → record_types: true wherever HubSpot has
+#     pipelines, so 02 emits RECORD_TYPES + Sales Process sections.
+#
+# 01_fetch_hubspot.py rewrites the `discovered` block on every run. Never edit
+# `discovered` by hand — edit `objects` or `defaults` and re-run.
+
+version: 1
+
+# ---------------------------------------------------------------------------
+# Target org model. Changing person_accounts is NOT a config-only change; it
+# alters the Contact model fundamentally. Re-run 02 from scratch if flipped.
+# ---------------------------------------------------------------------------
+org_model:
+  person_accounts: false
+  # TODO(prototype): confirm against the real target org before Phase 3.
+  # Check with: sf data query -q "SELECT IsPersonAccount FROM Account LIMIT 1"
+  # If that query succeeds, Person Accounts ARE enabled and this file is wrong.
+  multi_currency: unknown
+  record_types_enabled: true
+
+# ---------------------------------------------------------------------------
+# Explicit mappings for HubSpot standard objects.
+#   sf_object     — target API name
+#   sf_type       — standard | custom
+#   deploy        — Y | N | HOLD : the DEFAULT Deploy value 02 writes.
+#                   Guide rule: everything defaults to HOLD. Do not change these
+#                   to Y here; approval belongs in the workbook, not in config.
+#   record_types  — emit a RECORD_TYPES section from HubSpot pipelines
+#   external_id   — field holding the HubSpot record id (idempotent upsert key)
+# ---------------------------------------------------------------------------
+objects:
+  contacts:
+    sf_object: Contact
+    sf_type: standard
+    deploy: HOLD
+    record_types: false
+    external_id: HubSpot_Record_Id__c
+    load_order: 20
+    notes: >-
+      Person Accounts are off, so this is the standard Contact object.
+      Contact requires an AccountId for most orgs — company association must
+      resolve in pass 2 of the data load.
+
+  companies:
+    sf_object: Account
+    sf_type: standard
+    deploy: HOLD
+    record_types: false
+    external_id: HubSpot_Record_Id__c
+    load_order: 10
+    notes: Parent of Contact. Always loads first.
+
+  deals:
+    sf_object: Opportunity
+    sf_type: standard
+    deploy: HOLD
+    record_types: true
+    external_id: HubSpot_Record_Id__c
+    load_order: 30
+    notes: >-
+      Pipelines become Record Types + Sales Processes. Every Opportunity
+      record type needs a SalesProcess referencing the StageName picklist,
+      or the deploy fails with a non-obvious error.
+
+  tickets:
+    sf_object: Case
+    sf_type: standard
+    deploy: HOLD
+    record_types: true
+    external_id: HubSpot_Record_Id__c
+    load_order: 40
+    notes: >-
+      Ticket pipelines become Case record types. Case has a SupportProcess,
+      not a SalesProcess — different metadata type, same idea.
+
+  products:
+    sf_object: Product2
+    sf_type: standard
+    deploy: HOLD
+    record_types: false
+    external_id: HubSpot_Record_Id__c
+    load_order: 15
+
+  line_items:
+    sf_object: OpportunityLineItem
+    sf_type: standard
+    deploy: HOLD
+    record_types: false
+    external_id: HubSpot_Record_Id__c
+    load_order: 50
+    notes: >-
+      Requires a PricebookEntry. Cannot be loaded until Product2 and a
+      standard pricebook exist in the target org.
+
+# ---------------------------------------------------------------------------
+# Objects deliberately NOT migrated by default. 02 still lists them on _Index
+# so the omission is visible and reviewable, but emits no metadata.
+# ---------------------------------------------------------------------------
+excluded:
+  - object: owners
+    reason: Becomes the _Users mapping tab, not a Salesforce object.
+  - object: emails
+    reason: Activity object. Blocked when HubSpot Sensitive Data is enabled — 01 probes for this.
+  - object: calls
+    reason: Activity object. Same Sensitive Data caveat.
+  - object: meetings
+    reason: Activity object. Same Sensitive Data caveat.
+  - object: notes
+    reason: Activity object. Same Sensitive Data caveat.
+  - object: tasks
+    reason: Activity object. Map to SF Task only if the client asks for it.
+
+# ---------------------------------------------------------------------------
+# Fallback for any object not listed above — which, given the portal is
+# unknown, is expected to catch every custom object the client has.
+# ---------------------------------------------------------------------------
+defaults:
+  unknown_object:
+    sf_type: custom
+    # Naming is applied by naming.yml: HubSpot "service_order" → Service_Order__c
+    sf_object_template: "{PascalName}__c"
+    deploy: HOLD
+    record_types: auto      # emit RECORD_TYPES iff HubSpot reports pipelines
+    external_id: HubSpot_Record_Id__c
+    load_order: 100
+    sharing_model: ReadWrite
+    deployment_status: Deployed
+    # Every SF custom object needs a Name field. HubSpot's primary display
+    # property is used when 01 can identify it, else an autonumber.
+    name_field:
+      prefer_hubspot_primary_display_property: true
+      fallback_type: AutoNumber
+      fallback_format: "{ObjectPrefix}-{00000}"
+
+# ---------------------------------------------------------------------------
+# Relationship handling.
+# ---------------------------------------------------------------------------
+associations:
+  # HubSpot many-to-many has no direct SF equivalent on standard lookups.
+  many_to_many_strategy: junction_object
+  junction_object_template: "{A}_{B}_Assoc__c"
+  # Master-detail cannot be added to an object that already has records, and
+  # is not reversible. Never propose it automatically.
+  default_relationship_type: Lookup
+  propose_master_detail: false
+
+# ---------------------------------------------------------------------------
+# Written by 01_fetch_hubspot.py. Hand edits here are overwritten.
+# ---------------------------------------------------------------------------
+discovered:
+  last_fetch: null
+  portal_id: null
+  sensitive_data_enabled: unknown
+  standard_objects: []
+  custom_objects: []
+  objects_with_pipelines: []
+  unmapped: []          # discovered objects with no entry in `objects` above

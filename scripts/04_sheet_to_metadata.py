@@ -1,0 +1,550 @@
+#!/usr/bin/env python3
+"""04 — Workbook → Salesforce metadata XML.
+
+    python scripts/04_sheet_to_metadata.py
+    python scripts/04_sheet_to_metadata.py --check    # offline validation too
+
+Pure function: same workbook in, same XML out, every time. force-app/ is wiped
+and regenerated, never patched — CLAUDE.md rule 2.
+
+Emits:
+  objects/{Object}/{Object}.object-meta.xml
+  objects/{Object}/fields/{Field}__c.field-meta.xml
+  objects/{Object}/recordTypes/{RT}.recordType-meta.xml
+  objects/{Object}/validationRules/{Rule}.validationRule-meta.xml
+  {salesProcesses,supportProcesses}/{Process}.*-meta.xml
+  permissionsets/Migration_Access.permissionset-meta.xml
+  manifest/package.xml
+
+The permission set is NOT optional. Fields deployed without FLS are invisible
+to everyone but System Administrator, and the client reports the migration as
+broken.
+
+CHECKPOINT (with an org):    sf project deploy validate --target-org client-sbx
+CHECKPOINT (without an org): python scripts/04_sheet_to_metadata.py --check
+"""
+
+from __future__ import annotations
+
+import argparse
+import shutil
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+from xml.etree import ElementTree
+
+sys.path.insert(0, str(Path(__file__).parent))
+
+from lib import mapping, sf_metadata as sfm, workbook as wbmod
+
+ROOT = Path(__file__).resolve().parent.parent
+WB = ROOT / "mapping" / "workbook.xlsx"
+FORCE_APP = ROOT / "force-app" / "main" / "default"
+MANIFEST = ROOT / "manifest"
+
+STANDARD_OBJECTS = {
+    "Account", "Contact", "Opportunity", "Case", "Lead", "User",
+    "Product2", "OpportunityLineItem", "Campaign", "Task", "Event",
+}
+
+
+def log(msg=""):
+    print(msg, flush=True)
+
+
+def deploy_value(row) -> str:
+    return str(row.get("Deploy", "")).strip().upper()
+
+
+def final(row, column, fallback=None) -> str:
+    value = row.get(column)
+    if value in (None, "") and fallback:
+        value = row.get(fallback)
+    return str(value or "").strip()
+
+
+class Emitter:
+    def __init__(self, tabs, config):
+        self.tabs = tabs
+        self.config = config
+        self.naming = config["naming"]
+        self.written: list[Path] = []
+        self.manifest: dict[str, list[str]] = {}
+        self.field_permissions: list[dict] = []
+        self.object_permissions: list[dict] = []
+        self.skipped: list[str] = []
+
+    def write(self, path: Path, content: str, manifest_type=None, member=None):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+        self.written.append(path)
+        if manifest_type and member:
+            self.manifest.setdefault(manifest_type, []).append(member)
+
+    # -- objects -----------------------------------------------------------
+
+    def emit_all(self):
+        for tab_name, tab in sorted(self.tabs.items()):
+            fields = tab.sections.get("FIELDS")
+            if not fields:
+                continue
+            deploying = [r for r in fields.rows if deploy_value(r) == "Y"]
+            if not deploying:
+                self.skipped.append(f"{tab_name}: no fields marked Y")
+                continue
+
+            sf_object = self.resolve_object_name(tab_name)
+            is_custom = sf_object.endswith("__c")
+
+            if is_custom:
+                self.emit_object(sf_object, tab_name)
+
+            self.emit_fields(sf_object, deploying, tab)
+            self.emit_record_types(sf_object, tab)
+            self.emit_validation_rules(sf_object, tab)
+
+            self.object_permissions.append({
+                "object": sf_object,
+                "create": True, "read": True, "edit": True, "delete": False,
+            })
+
+        self.emit_permission_set()
+        self.emit_manifest()
+
+    def resolve_object_name(self, tab_name: str) -> str:
+        if tab_name in STANDARD_OBJECTS:
+            return tab_name
+        return tab_name if tab_name.endswith("__c") else f"{tab_name}__c"
+
+    def emit_object(self, sf_object: str, tab_name: str):
+        defaults = (self.config["objects"].get("defaults", {})
+                    .get("unknown_object", {}) or {})
+        name_cfg = defaults.get("name_field", {}) or {}
+        label = sf_object.replace("__c", "").replace("_", " ")
+
+        xml = sfm.custom_object(
+            api_name=sf_object,
+            label=label,
+            # HubSpot object names are already plural ("service_orders"), so a
+            # blind +"s" produces "Service Orderss" in the client's Setup menu.
+            plural_label=label if label.endswith("s") else label + "s",
+            name_field_type=name_cfg.get("fallback_type", "Text"),
+            name_field_label=f"{label} Name",
+            autonumber_format=str(name_cfg.get("fallback_format", "{00000}")).replace(
+                "{ObjectPrefix}", sf_object[:3].upper()),
+            sharing_model=defaults.get("sharing_model", "ReadWrite"),
+            deployment_status=defaults.get("deployment_status", "Deployed"),
+            description=f"Migrated from HubSpot. Generated by 04_sheet_to_metadata.py.",
+        )
+        self.write(FORCE_APP / "objects" / sf_object / f"{sf_object}.object-meta.xml",
+                   xml, "CustomObject", sf_object)
+
+    # -- fields ------------------------------------------------------------
+
+    def emit_fields(self, sf_object: str, rows, tab):
+        picklists = self.collect_picklists(tab)
+        external_id_seen = False
+
+        for row in rows:
+            api = final(row, "Final_API", "Proposed_API")
+            sf_type = final(row, "Final_Type", "Proposed_Type")
+            hs_prop = str(row.get("HS Property", ""))
+
+            # Standard fields already exist — nothing to create. They still get
+            # FLS, because the migration writes to them.
+            if sf_type == "Standard" or not api.endswith("__c"):
+                self.field_permissions.append({
+                    "field": f"{sf_object}.{api}", "editable": True, "readable": True,
+                    "standard": True, "type": sf_type,
+                })
+                continue
+
+            length = final(row, "Final_Len", "Proposed_Len")
+            length_int = int(length) if length.isdigit() else None
+            values = picklists.get(hs_prop, [])
+            is_external = api == self.naming["components"]["external_id_field"]["api_name"]
+            if is_external:
+                external_id_seen = True
+
+            ext_cfg = self.naming["components"]["external_id_field"]
+            label = (ext_cfg["label"] if is_external
+                     else str(row.get("HS Property") or api).replace("_", " ").title())
+
+            try:
+                xml = sfm.custom_field(
+                    api_name=api,
+                    label=label,
+                    field_type=sf_type,
+                    length=length_int if sf_type in sfm.LENGTH_TYPES else None,
+                    precision=length_int if sf_type in sfm.NUMERIC_TYPES else None,
+                    scale=2 if sf_type in sfm.NUMERIC_TYPES else None,
+                    external_id=is_external,
+                    unique=is_external,
+                    picklist_values=values,
+                    visible_lines=4 if sf_type in sfm.VISIBLE_LINES_TYPES else None,
+                    reference_to=final(row, "Final_Target", "Proposed_Target") or "User",
+                    description=f"Migrated from HubSpot property {hs_prop!r}.",
+                )
+            except sfm.MetadataError as exc:
+                # A workbook value Salesforce would reject. Fail here, with the
+                # row, rather than at deploy time with an opaque error.
+                raise SystemExit(
+                    f"\nFATAL: {row['_tab']}!row {row['_row']} ({hs_prop})\n"
+                    f"  {exc}\n"
+                    f"  Fix the workbook and re-run 04."
+                ) from None
+
+            self.write(
+                FORCE_APP / "objects" / sf_object / "fields" / f"{api}.field-meta.xml",
+                xml, "CustomField", f"{sf_object}.{api}")
+
+            self.field_permissions.append({
+                "field": f"{sf_object}.{api}", "editable": True, "readable": True,
+                "type": sf_type, "required": False,
+            })
+
+        if not external_id_seen:
+            self.emit_external_id(sf_object)
+
+        self.emit_relationships(sf_object, tab)
+
+    def emit_external_id(self, sf_object: str):
+        """Every migrated object needs the HubSpot id as a unique External ID.
+        Without it the data load cannot be idempotent, so 04 adds it whether or
+        not the workbook proposed one."""
+        cfg = self.naming["components"]["external_id_field"]
+        api = cfg["api_name"]
+        xml = sfm.custom_field(
+            api_name=api, label=cfg["label"], field_type=cfg["type"],
+            length=cfg["length"], external_id=True, unique=True,
+            description=cfg["description"],
+        )
+        self.write(FORCE_APP / "objects" / sf_object / "fields" / f"{api}.field-meta.xml",
+                   xml, "CustomField", f"{sf_object}.{api}")
+        self.field_permissions.append({
+            "field": f"{sf_object}.{api}", "editable": True, "readable": True,
+            "type": cfg["type"],
+        })
+
+    def emit_relationships(self, sf_object: str, tab):
+        section = tab.sections.get("RELATIONSHIPS")
+        if not section:
+            return
+        for row in section.rows:
+            if deploy_value(row) != "Y":
+                continue
+            api = final(row, "Final_API", "Proposed_API")
+            target = final(row, "Final_Target", "Proposed_Target")
+            rel_type = final(row, "Final_Type", "Proposed_Type") or "Lookup"
+            if not api.endswith("__c"):
+                api += "__c"
+
+            xml = sfm.custom_field(
+                api_name=api,
+                label=target.replace("__c", "").replace("_", " "),
+                field_type=rel_type,
+                reference_to=target,
+                relationship_name=final(row, "Child_Relationship") or api.replace("__c", ""),
+                relationship_label=f"{sf_object.replace('__c', '')} records",
+                description=f"HubSpot association {row.get('HS Association', '')}.",
+            )
+            self.write(
+                FORCE_APP / "objects" / sf_object / "fields" / f"{api}.field-meta.xml",
+                xml, "CustomField", f"{sf_object}.{api}")
+            self.field_permissions.append({
+                "field": f"{sf_object}.{api}", "editable": True, "readable": True,
+                "type": rel_type,
+            })
+
+    def collect_picklists(self, tab) -> dict[str, list[dict]]:
+        section = tab.sections.get("PICKLISTS")
+        if not section:
+            return {}
+        grouped: dict[str, list[dict]] = {}
+        for row in section.rows:
+            if deploy_value(row) != "Y":
+                continue
+            prop = str(row.get("HS Property", ""))
+            value = final(row, "Final_Value", "Proposed_Value")
+            if not value:
+                continue
+            grouped.setdefault(prop, []).append({
+                "fullName": value,
+                "label": str(row.get("HS Label") or value),
+                "default": str(row.get("Default", "")).strip().upper() in ("Y", "TRUE"),
+            })
+        return grouped
+
+    # -- record types ------------------------------------------------------
+
+    def emit_record_types(self, sf_object: str, tab):
+        section = tab.sections.get("RECORD_TYPES")
+        if not section:
+            return
+
+        by_rt: dict[str, dict] = {}
+        for row in section.rows:
+            if deploy_value(row) != "Y":
+                continue
+            rt_api = final(row, "Final_RT_API", "Proposed_RT_API")
+            if not rt_api:
+                continue
+            entry = by_rt.setdefault(rt_api, {
+                "label": final(row, "Final_RT_Label", "Proposed_RT_Label") or rt_api,
+                "process": final(row, "Process_Name") or f"{rt_api}_Process",
+                "stages": [],
+            })
+            stage = final(row, "Final_Stage_Value", "Proposed_Stage_Value")
+            if stage and stage not in entry["stages"]:
+                entry["stages"].append(stage)
+
+        if not by_rt:
+            return
+
+        # Opportunity and Case record types require a business process, or the
+        # deploy fails with an error that does not name the real cause. Both
+        # use the BusinessProcess metadata type, stored under the object.
+        needs_process = sf_object in ("Opportunity", "Case")
+
+        for rt_api, entry in by_rt.items():
+            process_name = entry["process"] if needs_process else None
+
+            if needs_process:
+                self.write(
+                    FORCE_APP / "objects" / sf_object / "businessProcesses" /
+                    f"{process_name}.businessProcess-meta.xml",
+                    sfm.business_process(
+                        api_name=process_name, label=entry["label"],
+                        values=entry["stages"],
+                        description=f"Generated from HubSpot pipeline {entry['label']!r}."),
+                    "BusinessProcess", f"{sf_object}.{process_name}")
+
+            picklist_field = {"Opportunity": "StageName", "Case": "Status"}.get(sf_object)
+            picklist_values = ([{"picklist": picklist_field, "values": entry["stages"]}]
+                               if picklist_field else [])
+
+            self.write(
+                FORCE_APP / "objects" / sf_object / "recordTypes" / f"{rt_api}.recordType-meta.xml",
+                sfm.record_type(
+                    api_name=rt_api, label=entry["label"], active=True,
+                    business_process=process_name,
+                    picklist_values=picklist_values,
+                    description=f"Generated from HubSpot pipeline {entry['label']!r}."),
+                "RecordType", f"{sf_object}.{rt_api}")
+
+    # -- validation rules --------------------------------------------------
+
+    def emit_validation_rules(self, sf_object: str, tab):
+        section = tab.sections.get("VALIDATION_RULES")
+        if not section:
+            return
+        for row in section.rows:
+            if deploy_value(row) != "Y":
+                continue
+            name = final(row, "Rule_Name")
+            formula = final(row, "Final_Formula", "Proposed_Formula")
+            if not name or not formula:
+                continue
+            # Rule 8: inactive unless the reviewer explicitly said otherwise.
+            active = str(row.get("Active", "")).strip().upper() in ("TRUE", "Y", "YES")
+            self.write(
+                FORCE_APP / "objects" / sf_object / "validationRules" /
+                f"{name}.validationRule-meta.xml",
+                sfm.validation_rule(
+                    api_name=name, formula=formula,
+                    error_message=final(row, "Error_Message_Text") or "Validation failed.",
+                    active=active,
+                    error_field=final(row, "Error_Location") or None,
+                    description=final(row, "Description")),
+                "ValidationRule", f"{sf_object}.{name}")
+
+    # -- permission set ----------------------------------------------------
+
+    def emit_permission_set(self):
+        cfg = self.naming["components"]["permission_set"]
+        xml = sfm.permission_set(
+            api_name=cfg["api_name"], label=cfg["label"],
+            field_permissions=self.field_permissions,
+            object_permissions=self.object_permissions,
+            description=cfg["description"],
+        )
+        self.write(
+            FORCE_APP / "permissionsets" / f"{cfg['api_name']}.permissionset-meta.xml",
+            xml, "PermissionSet", cfg["api_name"])
+
+    def emit_manifest(self):
+        MANIFEST.mkdir(exist_ok=True)
+        (MANIFEST / "package.xml").write_text(
+            sfm.package_manifest(self.manifest), encoding="utf-8")
+        self.written.append(MANIFEST / "package.xml")
+
+
+# ---------------------------------------------------------------------------
+# Offline checks — the substitute for `deploy validate` when no org exists
+# ---------------------------------------------------------------------------
+
+def offline_check(written: list[Path]) -> int:
+    log("\n" + "=" * 70)
+    log("OFFLINE CHECK — substitute for `sf project deploy validate`")
+    log("=" * 70)
+    log("This proves the XML is well-formed and structurally sound. It does NOT")
+    log("prove it is deployable: Salesforce rejects plenty of XML that parses")
+    log("fine. Treat it as partial confidence until an org is connected.\n")
+
+    failures = 0
+
+    # 1. Well-formedness.
+    for path in written:
+        try:
+            ElementTree.parse(path)
+        except ElementTree.ParseError as exc:
+            log(f"  MALFORMED: {path.relative_to(ROOT)}: {exc}")
+            failures += 1
+    log(f"  [1/3] XML well-formedness: {len(written) - failures}/{len(written)} parsed")
+
+    # 2. Attribute-combination assertions Salesforce is known to reject.
+    combo_failures = check_combinations(written)
+    failures += combo_failures
+    log(f"  [2/3] Field type/attribute combinations: "
+        f"{'PASS' if not combo_failures else f'{combo_failures} PROBLEM(S)'}")
+
+    # 3. sf project convert source — runs offline, catches structural errors.
+    log("  [3/3] sf project convert source …")
+    convert_failures = run_convert()
+    failures += convert_failures
+
+    log("")
+    if failures:
+        log(f"RESULT: {failures} problem(s). Fix the emitter or the workbook.")
+        return 1
+    log("RESULT: PASSED (offline). ~70% confidence.")
+    log("Connect a Developer Edition org aliased client-sbx for the real check:")
+    log("  sf org login web --alias client-sbx")
+    log("  sf project deploy validate --target-org client-sbx")
+    return 0
+
+
+def check_combinations(written: list[Path]) -> int:
+    ns = {"m": sfm.NS}
+    failures = 0
+
+    for path in written:
+        if not path.name.endswith(".field-meta.xml"):
+            continue
+        try:
+            root = ElementTree.parse(path).getroot()
+        except ElementTree.ParseError:
+            continue
+
+        def text(tag):
+            node = root.find(f"m:{tag}", ns)
+            return node.text if node is not None else None
+
+        field_type = text("type")
+        name = text("fullName") or path.stem
+        length = text("length")
+        external = text("externalId") == "true"
+        unique = text("unique") == "true"
+
+        if field_type in sfm.LENGTH_TYPES and not length:
+            log(f"  {name}: {field_type} has no <length>")
+            failures += 1
+        if field_type == "Text" and length and int(length) > 255:
+            log(f"  {name}: Text length {length} exceeds 255")
+            failures += 1
+        if external and not unique:
+            log(f"  {name}: externalId without unique — Bulk upsert cannot match")
+            failures += 1
+        if field_type in ("Lookup", "MasterDetail") and root.find("m:referenceTo", ns) is None:
+            log(f"  {name}: {field_type} has no <referenceTo>")
+            failures += 1
+        if field_type in ("Picklist", "MultiselectPicklist") and root.find("m:valueSet", ns) is None:
+            log(f"  {name}: picklist has no <valueSet>")
+            failures += 1
+        if len(name) > 40:
+            log(f"  {name}: API name is {len(name)} chars, max 40")
+            failures += 1
+
+    return failures
+
+
+def run_convert() -> int:
+    if not shutil.which("sf"):
+        log("        sf CLI not found — skipped.")
+        return 0
+    with tempfile.TemporaryDirectory() as tmp:
+        result = subprocess.run(
+            ["sf", "project", "convert", "source", "--output-dir", tmp,
+             "--manifest", str(MANIFEST / "package.xml")],
+            cwd=ROOT, capture_output=True, text=True, timeout=180,
+        )
+        if result.returncode == 0:
+            log("        converted cleanly (source structure and manifest are valid)")
+            return 0
+        detail = (result.stderr or result.stdout).strip().splitlines()
+        log("        FAILED:")
+        for line in detail[:12]:
+            log(f"          {line}")
+        return 1
+
+
+# ---------------------------------------------------------------------------
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Workbook → Salesforce metadata XML")
+    parser.add_argument("--check", action="store_true",
+                        help="run offline validation after emitting")
+    args = parser.parse_args()
+
+    if not WB.exists():
+        log(f"ERROR: {WB.relative_to(ROOT)} not found. Run 02 first.")
+        return 2
+
+    tabs = wbmod.read_workbook(WB)
+    config = mapping.load_config()
+
+    remaining = wbmod.holds(tabs)
+    if remaining:
+        log(f"ERROR: {len(remaining)} row(s) still at HOLD. Run 03 for the list.")
+        return 1
+
+    # Regenerate from scratch. force-app/main/default is output, never a source
+    # of truth — wiping the whole tree is what makes 04 a pure function. A
+    # partial clean leaves orphans from a previous run that still deploy.
+    if FORCE_APP.exists():
+        shutil.rmtree(FORCE_APP)
+    FORCE_APP.mkdir(parents=True)
+
+    emitter = Emitter(tabs, config)
+    emitter.emit_all()
+
+    log("=" * 70)
+    log("METADATA GENERATED")
+    log("=" * 70)
+    for type_name in config["naming"]["deploy_order"]:
+        members = emitter.manifest.get(type_name)
+        if members:
+            log(f"  {type_name}: {len(members)}")
+    for type_name, members in sorted(emitter.manifest.items()):
+        if type_name not in config["naming"]["deploy_order"]:
+            log(f"  {type_name}: {len(members)}")
+
+    log(f"\n  {len(emitter.written)} files written to force-app/main/default/")
+    log(f"  {len(emitter.field_permissions)} fields granted FLS via "
+        f"{config['naming']['components']['permission_set']['api_name']}")
+    if emitter.skipped:
+        log("\n  Skipped (nothing marked Y):")
+        for note in emitter.skipped:
+            log(f"    - {note}")
+
+    if args.check:
+        return offline_check(emitter.written)
+
+    log("\nCHECKPOINT: sf project deploy validate --target-org client-sbx")
+    log("No org yet?  python scripts/04_sheet_to_metadata.py --check")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

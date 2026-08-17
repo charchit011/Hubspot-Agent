@@ -1,0 +1,117 @@
+[
+  {
+    "name": "dealname",
+    "label": "Deal Name",
+    "type": "string",
+    "fieldType": "text",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "amount",
+    "label": "Amount",
+    "type": "number",
+    "fieldType": "number",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "closedate",
+    "label": "Close Date",
+    "type": "datetime",
+    "fieldType": "date",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "dealstage",
+    "label": "Deal Stage",
+    "type": "enumeration",
+    "fieldType": "select",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "pipeline",
+    "label": "Pipeline",
+    "type": "enumeration",
+    "fieldType": "select",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "dealtype",
+    "label": "Deal Type",
+    "type": "enumeration",
+    "fieldType": "select",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": "",
+    "options": [
+      {
+        "label": "New Business",
+        "value": "newbusiness",
+        "displayOrder": 0,
+        "hidden": false
+      },
+      {
+        "label": "Existing",
+        "value": "existingbusiness",
+        "displayOrder": 1,
+        "hidden": false
+      }
+    ]
+  },
+  {
+    "name": "hs_object_id",
+    "label": "Record ID",
+    "type": "number",
+    "fieldType": "number",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "hubspot_owner_id",
+    "label": "Deal owner",
+    "type": "enumeration",
+    "fieldType": "select",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "hs_forecast_amount",
+    "label": "Forecast Amount",
+    "type": "number",
+    "fieldType": "calculation_equation",
+    "groupName": "contactinformation",
+    "calculated": true,
+    "hidden": false,
+    "description": "",
+    "calculationFormula": "amount * hs_deal_stage_probability"
+  },
+  {
+    "name": "competitor_notes",
+    "label": "Competitor Notes",
+    "type": "string",
+    "fieldType": "textarea",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  }
+]

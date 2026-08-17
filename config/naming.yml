@@ -1,0 +1,232 @@
+# API naming: prefixes, suffixes, limits, reserved words.
+#
+# Every rule here is enforced twice — proposed by 02, then re-checked by 03
+# against the human's Final_API value. The client can and will type an invalid
+# API name into the workbook; 03 is what catches it before the org does.
+
+version: 1
+
+# ---------------------------------------------------------------------------
+# Salesforce hard limits. These are platform facts, not preferences.
+# ---------------------------------------------------------------------------
+limits:
+  field_api_name_max: 40          # INCLUDING the __c suffix
+  object_api_name_max: 40         # INCLUDING the __c suffix
+  label_max: 40
+  picklist_value_max: 255
+  picklist_label_max: 255
+  text_max: 255
+  longtextarea_max: 131072
+  relationship_name_max: 40
+  external_id_fields_per_object: 7
+  # Beyond this, a picklist becomes unusable in the UI — a warning, not a limit.
+  picklist_options_warn: 100
+
+# ---------------------------------------------------------------------------
+# Transformation from a HubSpot property name to a Salesforce API name.
+#   firstname            → FirstName        (mapped to standard, no suffix)
+#   custom_field_name    → Custom_Field_Name__c
+#   2nd_contact          → X2nd_Contact__c  (cannot start with a digit)
+# ---------------------------------------------------------------------------
+transform:
+  case: PascalSnake               # Title_Case_With_Underscores
+  custom_suffix: __c
+  object_suffix: __c
+  # SF API names must start with a letter.
+  leading_digit_prefix: "X"
+  # Collapse anything not [A-Za-z0-9_] to a single underscore.
+  strip_pattern: "[^A-Za-z0-9_]+"
+  replacement: "_"
+  # Doubled and edge underscores are rejected by Salesforce.
+  collapse_double_underscore: true
+  trim_leading_underscore: true
+  trim_trailing_underscore: true
+  # Applied when the transformed name would exceed the limit. Truncation is
+  # never silent — it always raises a review flag, because two long HubSpot
+  # names frequently truncate to the same thing.
+  truncation:
+    strategy: truncate_then_flag
+    reserve_for_suffix: 3
+    flag_on_truncate: true
+
+# Optional namespace prefix, e.g. HS_Contact_Score__c. Off by default: it eats
+# characters from the 40-char budget and clients generally dislike it.
+prefix:
+  enabled: false
+  value: "HS_"
+  apply_to: [fields, objects]
+
+# ---------------------------------------------------------------------------
+# Words Salesforce refuses, or that collide with standard API names.
+# Hitting one forces a manual Final_API value.
+#
+# Every entry is QUOTED deliberately. YAML 1.1 parses bare Null/Yes/No/On/Off
+# as scalars rather than strings, which silently turns "Null" into None and
+# breaks the reserved-word check for that entry.
+# ---------------------------------------------------------------------------
+reserved_words:
+  - "Id"
+  - "Name"
+  - "Type"
+  - "Owner"
+  - "OwnerId"
+  - "CreatedDate"
+  - "CreatedById"
+  - "LastModifiedDate"
+  - "LastModifiedById"
+  - "SystemModstamp"
+  - "IsDeleted"
+  - "RecordType"
+  - "RecordTypeId"
+  - "Currency"
+  - "CurrencyIsoCode"
+  - "Status"
+  - "Select"
+  - "From"
+  - "Where"
+  - "Group"
+  - "Order"
+  - "Limit"
+  - "Like"
+  - "Null"
+  - "And"
+  - "Or"
+  - "Not"
+  - "Case"
+  - "When"
+  - "Then"
+  - "Else"
+  - "Date"
+  - "Time"
+  - "Number"
+  - "Value"
+  - "Lock"
+  - "Division"
+  - "Setup"
+  - "User"
+  - "Account"
+  - "Contact"
+  - "Opportunity"
+  - "Lead"
+  - "Task"
+  - "Event"
+
+
+# Suffixes Salesforce reserves; a custom name ending in one is rejected.
+reserved_suffixes:
+  - __c
+  - __r
+  - __e
+  - __x
+  - __b
+  - __mdt
+  - __hd
+  - __Share
+  - __History
+  - __Feed
+  - __Tag
+
+# ---------------------------------------------------------------------------
+# Naming for generated components.
+# ---------------------------------------------------------------------------
+components:
+  permission_set:
+    api_name: Migration_Access
+    label: Migration Access
+    description: >-
+      Field-level security for all migrated fields. Generated from every
+      workbook row marked Y. Fields deployed without FLS are invisible to
+      everyone except System Administrator — this is not optional.
+
+  external_id_field:
+    api_name: HubSpot_Record_Id__c
+    label: HubSpot Record ID
+    type: Text
+    length: 18
+    external_id: true
+    unique: true
+    description: Source HubSpot record id. The upsert key that makes the load re-runnable.
+
+  record_type:
+    # HubSpot pipeline "Sales Pipeline" → Sales_Pipeline
+    api_name_from: pipeline_label
+    sales_process_template: "{RecordType}_Process"
+    support_process_template: "{RecordType}_Process"
+
+  validation_rule:
+    api_name_template: "{Object}_{Check}"
+    # Guide rule 8: rules deploy inactive, or after the data load. Rules written
+    # for future data entry will reject legitimate historical records.
+    default_active: false
+
+  junction_object:
+    api_name_template: "{A}_{B}_Assoc__c"
+    label_template: "{A} / {B} Association"
+
+# ---------------------------------------------------------------------------
+# Standard-object field mappings. If a HubSpot property maps to one of these,
+# no custom field is created — a critical de-duplication step. Without it you
+# get FirstName__c sitting next to the real FirstName.
+# ---------------------------------------------------------------------------
+standard_field_map:
+  contacts:
+    firstname: FirstName
+    lastname: LastName
+    email: Email
+    phone: Phone
+    mobilephone: MobilePhone
+    jobtitle: Title
+    address: MailingStreet
+    city: MailingCity
+    state: MailingState
+    zip: MailingPostalCode
+    country: MailingCountry
+    fax: Fax
+    salutation: Salutation
+    hs_lead_status: LeadSource
+
+  companies:
+    name: Name
+    domain: Website
+    website: Website
+    phone: Phone
+    industry: Industry
+    numberofemployees: NumberOfEmployees
+    annualrevenue: AnnualRevenue
+    description: Description
+    address: BillingStreet
+    city: BillingCity
+    state: BillingState
+    zip: BillingPostalCode
+    country: BillingCountry
+    type: Type
+
+  deals:
+    dealname: Name
+    amount: Amount
+    closedate: CloseDate
+    dealstage: StageName
+    pipeline: RecordTypeId
+    description: Description
+    dealtype: Type
+
+  tickets:
+    subject: Subject
+    content: Description
+    hs_ticket_priority: Priority
+    hs_pipeline_stage: Status
+
+# ---------------------------------------------------------------------------
+# Deploy order. Fixed by CLAUDE.md rule 9 — 04 emits and 05 deploys in this
+# sequence. Reordering breaks dependencies (a lookup cannot reference an
+# object that does not exist yet).
+# ---------------------------------------------------------------------------
+deploy_order:
+  - CustomObject
+  - CustomField
+  - Picklist
+  - RecordType
+  - BusinessProcess
+  - PermissionSet
+  - Relationship
+  - ValidationRule      # last, and inactive

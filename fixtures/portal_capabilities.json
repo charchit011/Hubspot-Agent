@@ -1,0 +1,7 @@
+{
+  "sensitive_data_enabled": "unknown",
+  "evidence": "synthetic fixture — no portal was probed",
+  "warning": "Fixture data. Re-run 01 against the real portal before Phase 1.",
+  "probed_at": "2026-08-17T02:30:55.759444+00:00",
+  "scope_problems": []
+}

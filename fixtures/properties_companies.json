@@ -1,0 +1,870 @@
+[
+  {
+    "name": "name",
+    "label": "Company name",
+    "type": "string",
+    "fieldType": "text",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "domain",
+    "label": "Company Domain Name",
+    "type": "string",
+    "fieldType": "text",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "phone",
+    "label": "Phone Number",
+    "type": "string",
+    "fieldType": "phonenumber",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "industry",
+    "label": "Industry",
+    "type": "enumeration",
+    "fieldType": "select",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": "",
+    "options": [
+      {
+        "label": "Industry 1",
+        "value": "IND_001",
+        "displayOrder": 0,
+        "hidden": false
+      },
+      {
+        "label": "Industry 2",
+        "value": "IND_002",
+        "displayOrder": 1,
+        "hidden": false
+      },
+      {
+        "label": "Industry 3",
+        "value": "IND_003",
+        "displayOrder": 2,
+        "hidden": false
+      },
+      {
+        "label": "Industry 4",
+        "value": "IND_004",
+        "displayOrder": 3,
+        "hidden": false
+      },
+      {
+        "label": "Industry 5",
+        "value": "IND_005",
+        "displayOrder": 4,
+        "hidden": false
+      },
+      {
+        "label": "Industry 6",
+        "value": "IND_006",
+        "displayOrder": 5,
+        "hidden": false
+      },
+      {
+        "label": "Industry 7",
+        "value": "IND_007",
+        "displayOrder": 6,
+        "hidden": false
+      },
+      {
+        "label": "Industry 8",
+        "value": "IND_008",
+        "displayOrder": 7,
+        "hidden": false
+      },
+      {
+        "label": "Industry 9",
+        "value": "IND_009",
+        "displayOrder": 8,
+        "hidden": false
+      },
+      {
+        "label": "Industry 10",
+        "value": "IND_010",
+        "displayOrder": 9,
+        "hidden": false
+      },
+      {
+        "label": "Industry 11",
+        "value": "IND_011",
+        "displayOrder": 10,
+        "hidden": false
+      },
+      {
+        "label": "Industry 12",
+        "value": "IND_012",
+        "displayOrder": 11,
+        "hidden": false
+      },
+      {
+        "label": "Industry 13",
+        "value": "IND_013",
+        "displayOrder": 12,
+        "hidden": false
+      },
+      {
+        "label": "Industry 14",
+        "value": "IND_014",
+        "displayOrder": 13,
+        "hidden": false
+      },
+      {
+        "label": "Industry 15",
+        "value": "IND_015",
+        "displayOrder": 14,
+        "hidden": false
+      },
+      {
+        "label": "Industry 16",
+        "value": "IND_016",
+        "displayOrder": 15,
+        "hidden": false
+      },
+      {
+        "label": "Industry 17",
+        "value": "IND_017",
+        "displayOrder": 16,
+        "hidden": false
+      },
+      {
+        "label": "Industry 18",
+        "value": "IND_018",
+        "displayOrder": 17,
+        "hidden": false
+      },
+      {
+        "label": "Industry 19",
+        "value": "IND_019",
+        "displayOrder": 18,
+        "hidden": false
+      },
+      {
+        "label": "Industry 20",
+        "value": "IND_020",
+        "displayOrder": 19,
+        "hidden": false
+      },
+      {
+        "label": "Industry 21",
+        "value": "IND_021",
+        "displayOrder": 20,
+        "hidden": false
+      },
+      {
+        "label": "Industry 22",
+        "value": "IND_022",
+        "displayOrder": 21,
+        "hidden": false
+      },
+      {
+        "label": "Industry 23",
+        "value": "IND_023",
+        "displayOrder": 22,
+        "hidden": false
+      },
+      {
+        "label": "Industry 24",
+        "value": "IND_024",
+        "displayOrder": 23,
+        "hidden": false
+      },
+      {
+        "label": "Industry 25",
+        "value": "IND_025",
+        "displayOrder": 24,
+        "hidden": false
+      },
+      {
+        "label": "Industry 26",
+        "value": "IND_026",
+        "displayOrder": 25,
+        "hidden": false
+      },
+      {
+        "label": "Industry 27",
+        "value": "IND_027",
+        "displayOrder": 26,
+        "hidden": false
+      },
+      {
+        "label": "Industry 28",
+        "value": "IND_028",
+        "displayOrder": 27,
+        "hidden": false
+      },
+      {
+        "label": "Industry 29",
+        "value": "IND_029",
+        "displayOrder": 28,
+        "hidden": false
+      },
+      {
+        "label": "Industry 30",
+        "value": "IND_030",
+        "displayOrder": 29,
+        "hidden": false
+      },
+      {
+        "label": "Industry 31",
+        "value": "IND_031",
+        "displayOrder": 30,
+        "hidden": false
+      },
+      {
+        "label": "Industry 32",
+        "value": "IND_032",
+        "displayOrder": 31,
+        "hidden": false
+      },
+      {
+        "label": "Industry 33",
+        "value": "IND_033",
+        "displayOrder": 32,
+        "hidden": false
+      },
+      {
+        "label": "Industry 34",
+        "value": "IND_034",
+        "displayOrder": 33,
+        "hidden": false
+      },
+      {
+        "label": "Industry 35",
+        "value": "IND_035",
+        "displayOrder": 34,
+        "hidden": false
+      },
+      {
+        "label": "Industry 36",
+        "value": "IND_036",
+        "displayOrder": 35,
+        "hidden": false
+      },
+      {
+        "label": "Industry 37",
+        "value": "IND_037",
+        "displayOrder": 36,
+        "hidden": false
+      },
+      {
+        "label": "Industry 38",
+        "value": "IND_038",
+        "displayOrder": 37,
+        "hidden": false
+      },
+      {
+        "label": "Industry 39",
+        "value": "IND_039",
+        "displayOrder": 38,
+        "hidden": false
+      },
+      {
+        "label": "Industry 40",
+        "value": "IND_040",
+        "displayOrder": 39,
+        "hidden": false
+      },
+      {
+        "label": "Industry 41",
+        "value": "IND_041",
+        "displayOrder": 40,
+        "hidden": false
+      },
+      {
+        "label": "Industry 42",
+        "value": "IND_042",
+        "displayOrder": 41,
+        "hidden": false
+      },
+      {
+        "label": "Industry 43",
+        "value": "IND_043",
+        "displayOrder": 42,
+        "hidden": false
+      },
+      {
+        "label": "Industry 44",
+        "value": "IND_044",
+        "displayOrder": 43,
+        "hidden": false
+      },
+      {
+        "label": "Industry 45",
+        "value": "IND_045",
+        "displayOrder": 44,
+        "hidden": false
+      },
+      {
+        "label": "Industry 46",
+        "value": "IND_046",
+        "displayOrder": 45,
+        "hidden": false
+      },
+      {
+        "label": "Industry 47",
+        "value": "IND_047",
+        "displayOrder": 46,
+        "hidden": false
+      },
+      {
+        "label": "Industry 48",
+        "value": "IND_048",
+        "displayOrder": 47,
+        "hidden": false
+      },
+      {
+        "label": "Industry 49",
+        "value": "IND_049",
+        "displayOrder": 48,
+        "hidden": false
+      },
+      {
+        "label": "Industry 50",
+        "value": "IND_050",
+        "displayOrder": 49,
+        "hidden": false
+      },
+      {
+        "label": "Industry 51",
+        "value": "IND_051",
+        "displayOrder": 50,
+        "hidden": false
+      },
+      {
+        "label": "Industry 52",
+        "value": "IND_052",
+        "displayOrder": 51,
+        "hidden": false
+      },
+      {
+        "label": "Industry 53",
+        "value": "IND_053",
+        "displayOrder": 52,
+        "hidden": false
+      },
+      {
+        "label": "Industry 54",
+        "value": "IND_054",
+        "displayOrder": 53,
+        "hidden": false
+      },
+      {
+        "label": "Industry 55",
+        "value": "IND_055",
+        "displayOrder": 54,
+        "hidden": false
+      },
+      {
+        "label": "Industry 56",
+        "value": "IND_056",
+        "displayOrder": 55,
+        "hidden": false
+      },
+      {
+        "label": "Industry 57",
+        "value": "IND_057",
+        "displayOrder": 56,
+        "hidden": false
+      },
+      {
+        "label": "Industry 58",
+        "value": "IND_058",
+        "displayOrder": 57,
+        "hidden": false
+      },
+      {
+        "label": "Industry 59",
+        "value": "IND_059",
+        "displayOrder": 58,
+        "hidden": false
+      },
+      {
+        "label": "Industry 60",
+        "value": "IND_060",
+        "displayOrder": 59,
+        "hidden": false
+      },
+      {
+        "label": "Industry 61",
+        "value": "IND_061",
+        "displayOrder": 60,
+        "hidden": false
+      },
+      {
+        "label": "Industry 62",
+        "value": "IND_062",
+        "displayOrder": 61,
+        "hidden": false
+      },
+      {
+        "label": "Industry 63",
+        "value": "IND_063",
+        "displayOrder": 62,
+        "hidden": false
+      },
+      {
+        "label": "Industry 64",
+        "value": "IND_064",
+        "displayOrder": 63,
+        "hidden": false
+      },
+      {
+        "label": "Industry 65",
+        "value": "IND_065",
+        "displayOrder": 64,
+        "hidden": false
+      },
+      {
+        "label": "Industry 66",
+        "value": "IND_066",
+        "displayOrder": 65,
+        "hidden": false
+      },
+      {
+        "label": "Industry 67",
+        "value": "IND_067",
+        "displayOrder": 66,
+        "hidden": false
+      },
+      {
+        "label": "Industry 68",
+        "value": "IND_068",
+        "displayOrder": 67,
+        "hidden": false
+      },
+      {
+        "label": "Industry 69",
+        "value": "IND_069",
+        "displayOrder": 68,
+        "hidden": false
+      },
+      {
+        "label": "Industry 70",
+        "value": "IND_070",
+        "displayOrder": 69,
+        "hidden": false
+      },
+      {
+        "label": "Industry 71",
+        "value": "IND_071",
+        "displayOrder": 70,
+        "hidden": false
+      },
+      {
+        "label": "Industry 72",
+        "value": "IND_072",
+        "displayOrder": 71,
+        "hidden": false
+      },
+      {
+        "label": "Industry 73",
+        "value": "IND_073",
+        "displayOrder": 72,
+        "hidden": false
+      },
+      {
+        "label": "Industry 74",
+        "value": "IND_074",
+        "displayOrder": 73,
+        "hidden": false
+      },
+      {
+        "label": "Industry 75",
+        "value": "IND_075",
+        "displayOrder": 74,
+        "hidden": false
+      },
+      {
+        "label": "Industry 76",
+        "value": "IND_076",
+        "displayOrder": 75,
+        "hidden": false
+      },
+      {
+        "label": "Industry 77",
+        "value": "IND_077",
+        "displayOrder": 76,
+        "hidden": false
+      },
+      {
+        "label": "Industry 78",
+        "value": "IND_078",
+        "displayOrder": 77,
+        "hidden": false
+      },
+      {
+        "label": "Industry 79",
+        "value": "IND_079",
+        "displayOrder": 78,
+        "hidden": false
+      },
+      {
+        "label": "Industry 80",
+        "value": "IND_080",
+        "displayOrder": 79,
+        "hidden": false
+      },
+      {
+        "label": "Industry 81",
+        "value": "IND_081",
+        "displayOrder": 80,
+        "hidden": false
+      },
+      {
+        "label": "Industry 82",
+        "value": "IND_082",
+        "displayOrder": 81,
+        "hidden": false
+      },
+      {
+        "label": "Industry 83",
+        "value": "IND_083",
+        "displayOrder": 82,
+        "hidden": false
+      },
+      {
+        "label": "Industry 84",
+        "value": "IND_084",
+        "displayOrder": 83,
+        "hidden": false
+      },
+      {
+        "label": "Industry 85",
+        "value": "IND_085",
+        "displayOrder": 84,
+        "hidden": false
+      },
+      {
+        "label": "Industry 86",
+        "value": "IND_086",
+        "displayOrder": 85,
+        "hidden": false
+      },
+      {
+        "label": "Industry 87",
+        "value": "IND_087",
+        "displayOrder": 86,
+        "hidden": false
+      },
+      {
+        "label": "Industry 88",
+        "value": "IND_088",
+        "displayOrder": 87,
+        "hidden": false
+      },
+      {
+        "label": "Industry 89",
+        "value": "IND_089",
+        "displayOrder": 88,
+        "hidden": false
+      },
+      {
+        "label": "Industry 90",
+        "value": "IND_090",
+        "displayOrder": 89,
+        "hidden": false
+      },
+      {
+        "label": "Industry 91",
+        "value": "IND_091",
+        "displayOrder": 90,
+        "hidden": false
+      },
+      {
+        "label": "Industry 92",
+        "value": "IND_092",
+        "displayOrder": 91,
+        "hidden": false
+      },
+      {
+        "label": "Industry 93",
+        "value": "IND_093",
+        "displayOrder": 92,
+        "hidden": false
+      },
+      {
+        "label": "Industry 94",
+        "value": "IND_094",
+        "displayOrder": 93,
+        "hidden": false
+      },
+      {
+        "label": "Industry 95",
+        "value": "IND_095",
+        "displayOrder": 94,
+        "hidden": false
+      },
+      {
+        "label": "Industry 96",
+        "value": "IND_096",
+        "displayOrder": 95,
+        "hidden": false
+      },
+      {
+        "label": "Industry 97",
+        "value": "IND_097",
+        "displayOrder": 96,
+        "hidden": false
+      },
+      {
+        "label": "Industry 98",
+        "value": "IND_098",
+        "displayOrder": 97,
+        "hidden": false
+      },
+      {
+        "label": "Industry 99",
+        "value": "IND_099",
+        "displayOrder": 98,
+        "hidden": false
+      },
+      {
+        "label": "Industry 100",
+        "value": "IND_100",
+        "displayOrder": 99,
+        "hidden": false
+      },
+      {
+        "label": "Industry 101",
+        "value": "IND_101",
+        "displayOrder": 100,
+        "hidden": false
+      },
+      {
+        "label": "Industry 102",
+        "value": "IND_102",
+        "displayOrder": 101,
+        "hidden": false
+      },
+      {
+        "label": "Industry 103",
+        "value": "IND_103",
+        "displayOrder": 102,
+        "hidden": false
+      },
+      {
+        "label": "Industry 104",
+        "value": "IND_104",
+        "displayOrder": 103,
+        "hidden": false
+      },
+      {
+        "label": "Industry 105",
+        "value": "IND_105",
+        "displayOrder": 104,
+        "hidden": false
+      },
+      {
+        "label": "Industry 106",
+        "value": "IND_106",
+        "displayOrder": 105,
+        "hidden": false
+      },
+      {
+        "label": "Industry 107",
+        "value": "IND_107",
+        "displayOrder": 106,
+        "hidden": false
+      },
+      {
+        "label": "Industry 108",
+        "value": "IND_108",
+        "displayOrder": 107,
+        "hidden": false
+      },
+      {
+        "label": "Industry 109",
+        "value": "IND_109",
+        "displayOrder": 108,
+        "hidden": false
+      },
+      {
+        "label": "Industry 110",
+        "value": "IND_110",
+        "displayOrder": 109,
+        "hidden": false
+      },
+      {
+        "label": "Industry 111",
+        "value": "IND_111",
+        "displayOrder": 110,
+        "hidden": false
+      },
+      {
+        "label": "Industry 112",
+        "value": "IND_112",
+        "displayOrder": 111,
+        "hidden": false
+      },
+      {
+        "label": "Industry 113",
+        "value": "IND_113",
+        "displayOrder": 112,
+        "hidden": false
+      },
+      {
+        "label": "Industry 114",
+        "value": "IND_114",
+        "displayOrder": 113,
+        "hidden": false
+      },
+      {
+        "label": "Industry 115",
+        "value": "IND_115",
+        "displayOrder": 114,
+        "hidden": false
+      },
+      {
+        "label": "Industry 116",
+        "value": "IND_116",
+        "displayOrder": 115,
+        "hidden": false
+      },
+      {
+        "label": "Industry 117",
+        "value": "IND_117",
+        "displayOrder": 116,
+        "hidden": false
+      },
+      {
+        "label": "Industry 118",
+        "value": "IND_118",
+        "displayOrder": 117,
+        "hidden": false
+      },
+      {
+        "label": "Industry 119",
+        "value": "IND_119",
+        "displayOrder": 118,
+        "hidden": false
+      },
+      {
+        "label": "Industry 120",
+        "value": "IND_120",
+        "displayOrder": 119,
+        "hidden": false
+      }
+    ]
+  },
+  {
+    "name": "numberofemployees",
+    "label": "Number of Employees",
+    "type": "number",
+    "fieldType": "number",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "annualrevenue",
+    "label": "Annual Revenue",
+    "type": "number",
+    "fieldType": "number",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "description",
+    "label": "Description",
+    "type": "string",
+    "fieldType": "textarea",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "city",
+    "label": "City",
+    "type": "string",
+    "fieldType": "text",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "country",
+    "label": "Country",
+    "type": "string",
+    "fieldType": "text",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "hs_object_id",
+    "label": "Record ID",
+    "type": "number",
+    "fieldType": "number",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "hubspot_owner_id",
+    "label": "Company owner",
+    "type": "enumeration",
+    "fieldType": "select",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "account_tier",
+    "label": "Account Tier",
+    "type": "enumeration",
+    "fieldType": "select",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": "",
+    "options": [
+      {
+        "label": "Platinum",
+        "value": "platinum",
+        "displayOrder": 0,
+        "hidden": false
+      },
+      {
+        "label": "Gold",
+        "value": "gold",
+        "displayOrder": 1,
+        "hidden": false
+      },
+      {
+        "label": "Silver",
+        "value": "silver",
+        "displayOrder": 2,
+        "hidden": false
+      },
+      {
+        "label": "Bronze",
+        "value": "bronze",
+        "displayOrder": 3,
+        "hidden": false
+      }
+    ]
+  }
+]

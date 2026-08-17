@@ -1,0 +1,92 @@
+[
+  {
+    "name": "subject",
+    "label": "Ticket Name",
+    "type": "string",
+    "fieldType": "text",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "content",
+    "label": "Ticket Description",
+    "type": "string",
+    "fieldType": "textarea",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "hs_pipeline",
+    "label": "Pipeline",
+    "type": "enumeration",
+    "fieldType": "select",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "hs_pipeline_stage",
+    "label": "Ticket Status",
+    "type": "enumeration",
+    "fieldType": "select",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "hs_ticket_priority",
+    "label": "Priority",
+    "type": "enumeration",
+    "fieldType": "select",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": "",
+    "options": [
+      {
+        "label": "Low",
+        "value": "LOW",
+        "displayOrder": 0,
+        "hidden": false
+      },
+      {
+        "label": "Medium",
+        "value": "MEDIUM",
+        "displayOrder": 1,
+        "hidden": false
+      },
+      {
+        "label": "High",
+        "value": "HIGH",
+        "displayOrder": 2,
+        "hidden": false
+      }
+    ]
+  },
+  {
+    "name": "hs_object_id",
+    "label": "Record ID",
+    "type": "number",
+    "fieldType": "number",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "hubspot_owner_id",
+    "label": "Ticket owner",
+    "type": "enumeration",
+    "fieldType": "select",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  }
+]

@@ -1,0 +1,307 @@
+[
+  {
+    "name": "firstname",
+    "label": "First Name",
+    "type": "string",
+    "fieldType": "text",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "lastname",
+    "label": "Last Name",
+    "type": "string",
+    "fieldType": "text",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "email",
+    "label": "Email",
+    "type": "string",
+    "fieldType": "text",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "phone",
+    "label": "Phone Number",
+    "type": "string",
+    "fieldType": "phonenumber",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "mobilephone",
+    "label": "Mobile Phone",
+    "type": "string",
+    "fieldType": "phonenumber",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "jobtitle",
+    "label": "Job Title",
+    "type": "string",
+    "fieldType": "text",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "company",
+    "label": "Company Name",
+    "type": "string",
+    "fieldType": "text",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "website",
+    "label": "Website URL",
+    "type": "string",
+    "fieldType": "text",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "city",
+    "label": "City",
+    "type": "string",
+    "fieldType": "text",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "state",
+    "label": "State/Region",
+    "type": "string",
+    "fieldType": "text",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "zip",
+    "label": "Postal Code",
+    "type": "string",
+    "fieldType": "text",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "country",
+    "label": "Country",
+    "type": "string",
+    "fieldType": "text",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "hs_object_id",
+    "label": "Record ID",
+    "type": "number",
+    "fieldType": "number",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "hubspot_owner_id",
+    "label": "Contact owner",
+    "type": "enumeration",
+    "fieldType": "select",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "lifecyclestage",
+    "label": "Lifecycle Stage",
+    "type": "enumeration",
+    "fieldType": "select",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": "",
+    "options": [
+      {
+        "label": "Subscriber",
+        "value": "subscriber",
+        "displayOrder": 0,
+        "hidden": false
+      },
+      {
+        "label": "Lead",
+        "value": "lead",
+        "displayOrder": 1,
+        "hidden": false
+      },
+      {
+        "label": "MQL",
+        "value": "marketingqualifiedlead",
+        "displayOrder": 2,
+        "hidden": false
+      },
+      {
+        "label": "SQL",
+        "value": "salesqualifiedlead",
+        "displayOrder": 3,
+        "hidden": false
+      },
+      {
+        "label": "Customer",
+        "value": "customer",
+        "displayOrder": 4,
+        "hidden": false
+      }
+    ]
+  },
+  {
+    "name": "notes_last_updated",
+    "label": "Last Activity Date",
+    "type": "datetime",
+    "fieldType": "date",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "engagement_score",
+    "label": "Engagement Score",
+    "type": "number",
+    "fieldType": "calculation_equation",
+    "groupName": "contactinformation",
+    "calculated": true,
+    "hidden": false,
+    "description": "Weighted engagement. Does NOT translate to an SF formula.",
+    "calculationFormula": "sum(page_views * 2, form_submissions * 10)"
+  },
+  {
+    "name": "preferred_contact_methods",
+    "label": "Preferred Contact Methods",
+    "type": "enumeration",
+    "fieldType": "checkbox",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": "",
+    "options": [
+      {
+        "label": "Email",
+        "value": "email",
+        "displayOrder": 0,
+        "hidden": false
+      },
+      {
+        "label": "Phone",
+        "value": "phone",
+        "displayOrder": 1,
+        "hidden": false
+      },
+      {
+        "label": "SMS",
+        "value": "sms",
+        "displayOrder": 2,
+        "hidden": false
+      },
+      {
+        "label": "Post",
+        "value": "post",
+        "displayOrder": 3,
+        "hidden": false
+      }
+    ]
+  },
+  {
+    "name": "internal_bio_and_background_notes_from_sales_team",
+    "label": "Internal Bio and Background Notes From Sales Team",
+    "type": "string",
+    "fieldType": "textarea",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": "Name exceeds 40 chars once suffixed — needs a short name."
+  },
+  {
+    "name": "legacy_crm_identifier",
+    "label": "Legacy CRM Identifier",
+    "type": "string",
+    "fieldType": "text",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": "Filled on ~3% of records. Probably not worth migrating."
+  },
+  {
+    "name": "gdpr_consent",
+    "label": "GDPR Consent",
+    "type": "bool",
+    "fieldType": "booleancheckbox",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": ""
+  },
+  {
+    "name": "hs_lead_status",
+    "label": "Lead Status",
+    "type": "enumeration",
+    "fieldType": "select",
+    "groupName": "contactinformation",
+    "calculated": false,
+    "hidden": false,
+    "description": "",
+    "options": [
+      {
+        "label": "New",
+        "value": "NEW",
+        "displayOrder": 0,
+        "hidden": false
+      },
+      {
+        "label": "Open",
+        "value": "OPEN",
+        "displayOrder": 1,
+        "hidden": false
+      },
+      {
+        "label": "In Progress",
+        "value": "IN_PROGRESS",
+        "displayOrder": 2,
+        "hidden": false
+      },
+      {
+        "label": "Unqualified",
+        "value": "UNQUALIFIED",
+        "displayOrder": 3,
+        "hidden": false
+      }
+    ]
+  }
+]
